@@ -4,26 +4,26 @@ import { useFormStore } from "../state/formStore";
 
 export default function EmployeeForm() {
   type FormType = {
-   FullName: string;
-   Age: string;
-   Position: string;
-   Role: string;
-   StartDate: string;
-   IdStore: string;
-   Seniority: string;
-   Address: string;
-   Birthday: string;
+    FullName: string;
+    Age: string;
+    Position: string;
+    Role: string;
+    StartDate: string;
+    IdStore: string;
+    Seniority: string;
+    Address: string;
+    Birthday: string;
   };
-  const [form, setForm] = useState<FormType>({ 
-    FullName: "", 
+  const [form, setForm] = useState<FormType>({
+    FullName: "",
     Age: "",
-    Position: "", 
-    Role: "", 
-    StartDate: "", 
-    IdStore: "", 
-    Seniority: "", 
-    Address:"", 
-    Birthday: "" 
+    Position: "",
+    Role: "",
+    StartDate: "",
+    IdStore: "",
+    Seniority: "",
+    Address: "",
+    Birthday: ""
   });
   const [birthdays, setBirday] = useState({
     BirthdayMonth: "",
@@ -36,11 +36,11 @@ export default function EmployeeForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (isSubmitting.current) return; 
+    if (isSubmitting.current) return;
     isSubmitting.current = true;
     setLoading(true);
     try {
-      setEmployeeData(form); 
+      setEmployeeData(form);
       await axios.post("http://localhost:3001/employes", form);
       alert("Empleado registrado correctamente");
     } catch (error: unknown) {
@@ -64,8 +64,8 @@ export default function EmployeeForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-sm">
-      <label  className="border p-2 rounded" >Nombre del empleado</label>
-      <br />
+      <label className="border p-2 rounded" >Nombre del empleado</label>
+
       <input
         type="text"
         placeholder="Nombre"
@@ -73,9 +73,9 @@ export default function EmployeeForm() {
         onChange={(e) => setForm({ ...form, FullName: e.target.value })}
         className="border p-2 rounded"
       />
-      <br />
-      <label  className="border p-2 rounded" >Puesto</label>
-      <br />
+
+      <label className="border p-2 rounded" >Puesto</label>
+
       <input
         type="text"
         placeholder="Puesto"
@@ -83,9 +83,9 @@ export default function EmployeeForm() {
         onChange={(e) => setForm({ ...form, Position: e.target.value })}
         className="border p-2 rounded"
       />
-      <br />
-      <label  className="border p-2 rounded" >Roll</label>
-      <br />
+
+      <label className="border p-2 rounded" >Roll</label>
+
       <input
         type="text"
         placeholder="Roll"
@@ -93,18 +93,18 @@ export default function EmployeeForm() {
         onChange={(e) => setForm({ ...form, Role: e.target.value })}
         className="border p-2 rounded"
       />
-      <br />
+
       <label className="border p-2 rounded">Fecha de inicio laboral</label>
-      <br />
+
       <input
         type="date"
         value={form.StartDate}
         onChange={(e) => setForm({ ...form, StartDate: e.target.value })}
         className="border p-2 rounded"
       />
-      <br />
-        <label  className="border p-2 rounded" >Tienda</label>
-      <br />
+
+      <label className="border p-2 rounded" >Tienda</label>
+
       <input
         type="text"
         placeholder="Selecciona una tienda"
@@ -112,9 +112,9 @@ export default function EmployeeForm() {
         onChange={(e) => setForm({ ...form, IdStore: e.target.value })}
         className="border p-2 rounded"
       />
-      <br />
-      <label  className="border p-2 rounded" >Direccion</label>
-      <br />
+
+      <label className="border p-2 rounded" >Direccion</label>
+
       <input
         type="text"
         placeholder="Direccion"
@@ -122,10 +122,10 @@ export default function EmployeeForm() {
         onChange={(e) => setForm({ ...form, Address: e.target.value })}
         className="border p-2 rounded"
       />
-      <br />
-      
+
+
       <label className="border p-2 rounded">Cumpleaños</label>
-      <br />
+
       <select
         value={birthdays.BirthdayMonth}
         onChange={(e) => {
@@ -151,7 +151,7 @@ export default function EmployeeForm() {
           const month = birthdays.BirthdayMonth;
           const birthday = month && day ? `${month}-${day}` : "";
           setForm({ ...form, Birthday: birthday });
-          setBirday({...birthdays, BirthdayDay: day});
+          setBirday({ ...birthdays, BirthdayDay: day });
         }}
         className="border p-2 rounded"
       >
@@ -160,16 +160,16 @@ export default function EmployeeForm() {
           const value = String(i + 1).padStart(2, '0');
           return <option key={value} value={value}>{value}</option>;
         })}
-      </select>      
-      <br />
-            <input
+      </select>
+
+      <input
         type="text"
         placeholder="Edad"
         value={form.Age}
         onChange={(e) => setForm({ ...form, Age: e.target.value })}
         className="border p-2 rounded"
       />
-      <br />
+
       <button type="submit" disabled={loading} className="bg-blue-500 text-white p-2 rounded">
         {loading ? "Enviando..." : "Registrar"}
       </button>
