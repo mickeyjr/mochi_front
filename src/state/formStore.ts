@@ -51,7 +51,7 @@ interface ProductData{
     GananciaPorUnidad: number,
     Fecha: string,
     RegistrationType: number,
-    Imagen: String,
+    Imagen: File | null,
     FechaEndExits: String,
 }
 // 2. Define la forma del estado global

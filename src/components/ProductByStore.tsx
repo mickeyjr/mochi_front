@@ -22,6 +22,7 @@ export default function StoreForm() {
     Imagen: "",
     FechaEndExits: "",
     RegistrationType: "",
+    IdProduct: ""
   });
 
   const { setProductData } = useFormStore();
@@ -31,28 +32,28 @@ export default function StoreForm() {
   const [seacrch, setSearch] = useState({ text: "" });
   const [products, setProducts] = useState([]);
 
-  const handleFillingOutForm = async (product: any) =>{
-        setForm((prev) => ({
-          ...prev,
-          CodigoBarras: product?.CodigoBarras ?? "",
-          CodigoChino: product?.CodigoChino ?? "",
-          Nombre: product?.Nombre || "",
-          Descripcion: product?.Descripcion || "",
-          PrecioCosto: product?.PrecioCosto || 0,
-          PrecioUnitario: product?.PrecioUnitario || 0,
-          PrecioPublico: product?.PrecioPublico || 0,
-          Contenido: product?.Contenido || 0,
-          stock: product?.stock ?? prev.stock,
-          GananciaPorUnidad: product?.GananciaPorUnidad || 0,
-          EstadoDelProducto: product?.EstadoDelProducto || "",
-          Lugar: product?.Lugar || "",
-          Imagen: product?.Imagen || "",
-          Fecha: product?.Fecha || prev.Fecha,
-          FechaEndExits: product?.FechaEndExits || prev.FechaEndExits,
-          IdEmployee: product?.IdEmployee || prev.IdEmployee,
-        }));
-      
-  }  
+  const handleFillingOutForm = async (product: any) => {
+    setForm((prev) => ({
+      ...prev,
+      CodigoBarras: product?.CodigoBarras ?? "",
+      CodigoChino: product?.CodigoChino ?? "",
+      Nombre: product?.Nombre || "",
+      Descripcion: product?.Descripcion || "",
+      PrecioCosto: product?.PrecioCosto || 0,
+      PrecioUnitario: product?.PrecioUnitario || 0,
+      PrecioPublico: product?.PrecioPublico || 0,
+      Contenido: product?.Contenido || 0,
+      stock: product?.stock ?? prev.stock,
+      EstadoDelProducto: product?.EstadoDelProducto || "",
+      Lugar: product?.Lugar || "",
+      Imagen: product?.Imagen || "",
+      Fecha: product?.Fecha || prev.Fecha,
+      FechaEndExits: product?.FechaEndExits || prev.FechaEndExits,
+      IdEmployee: product?.IdEmployee || prev.IdEmployee,
+      IdProduct: product?.IdProduct||prev.IdProduct
+    }));
+
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,16 +68,16 @@ export default function StoreForm() {
         IdEmployee: "202507181825140006782",
         Fecha: Date.now().toString(),
         Lugar: "",
-        Imagen: "Test",
+        Imagen: null,
         FechaEndExits: "N/A",
         EstadoDelProducto: "En existencia",
         InStock: true,
-        RegistrationType: 0,
+        RegistrationType: 1,
       };
 
       setProductData(newData);
       console.log("Enviando tienda:", newData);
-      await axios.post("http://localhost:3001/productos", newData);
+      await axios.post("http://localhost:3001/productos/bystore", newData);
       alert("Producto Registrado!");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -101,6 +102,7 @@ export default function StoreForm() {
     if (!seacrch.text.trim()) return;
 
     try {
+
       setLoading(true);
 
       const { data } = await axios.post(
@@ -108,30 +110,9 @@ export default function StoreForm() {
         { name: seacrch.text }
       );
 
+      console.log(data);
       setProducts(data);
 
-      const product = data[0];
-      /*if (product) {
-        setForm((prev) => ({
-          ...prev,
-          CodigoBarras: product?.CodigoBarras ?? "",
-          CodigoChino: product?.CodigoChino ?? "",
-          Nombre: product?.Nombre || "",
-          Descripcion: product?.Descripcion || "",
-          PrecioCosto: product?.PrecioCosto || 0,
-          PrecioUnitario: product?.PrecioUnitario || 0,
-          PrecioPublico: product?.PrecioPublico || 0,
-          Contenido: product?.Contenido || 0,
-          stock: product?.stock ?? prev.stock,
-          GananciaPorUnidad: product?.GananciaPorUnidad || 0,
-          EstadoDelProducto: product?.EstadoDelProducto || "",
-          Lugar: product?.Lugar || "",
-          Imagen: product?.Imagen || "",
-          Fecha: product?.Fecha || prev.Fecha,
-          FechaEndExits: product?.FechaEndExits || prev.FechaEndExits,
-          IdEmployee: product?.IdEmployee || prev.IdEmployee,
-        }));
-      }*/
     } catch (err) {
       console.error("No se pudo obtener el producto:", err);
       alert("Producto no encontrado");
@@ -143,51 +124,49 @@ export default function StoreForm() {
   return (
     <div className="flex flex-col md:flex-row w-full min-h-screen overflow-hidden">
 
-      {/* Columna izquierda: Formulario */}
       <form
         onSubmit={handleSubmit}
-        className="w-full md:w-1/2 h-screen overflow-y-auto p-4 sm:p-6 space-y-6 bg-white border-r"
+        className="w-full md:w-1/2 h-screen overflow-y-auto p-4 sm:p-6 bg-white border-r"
       >
-
-        {/* Campos del producto */}
-        {[
-          { label: "Código de barras externo", value: form.CodigoChino, key: "CodigoChino" },
-          { label: "Código de barras interno", value: form.CodigoBarras, key: "CodigoBarras" },
-          { label: "Nombre del producto", value: form.Nombre, key: "Nombre" },
-          { label: "Descripción del producto", value: form.Descripcion, key: "Descripcion" },
-          { label: "Costo del producto", value: form.PrecioCosto, key: "PrecioCosto", type: "number" },
-          { label: "Precio Unitario", value: form.PrecioUnitario, key: "PrecioUnitario", type: "number" },
-          { label: "Contenido Interno", value: form.Contenido, key: "Contenido", type: "number" },
-          { label: "Precio al público", value: form.PrecioPublico, key: "PrecioPublico", type: "number" },
-          { label: "Stock", value: form.stock, key: "stock", type: "number" },
-          { label: "Ganancia unitaria", value: form.GananciaPorUnidad, key: "GananciaPorUnidad", type: "number" },
-        ].map(({ label, value, key, type = "text" }) => (
-          <div key={key} className="bg-gray-50 border border-gray-300 rounded-lg p-4 shadow-sm">
-            <label className="block text-sm font-semibold mb-2 text-gray-700">{label}</label>
-            <input
-              type={type}
-              placeholder={label}
-              value={value}
-              onChange={(e) =>
-                setForm({ ...form, [key]: type === "number" ? parseFloat(e.target.value) : e.target.value })
-              }
-              className="w-full border border-gray-400 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        ))}
+        <div className="flex flex-wrap gap-4 justify-center">
+          {[
+            { label: "Código de barras externo", value: form.CodigoChino, disabled: true, barcode: true, key: "CodigoChino" },
+            { label: "Código de barras interno", value: form.CodigoBarras, disabled: true, barcode: true, key: "CodigoBarras" },
+            { label: "Nombre del producto", value: form.Nombre, disabled: true, key: "Nombre" },
+            { label: "Descripción del producto", value: form.Descripcion, disabled: true, key: "Descripcion" },
+            { label: "Precio al público", value: form.PrecioPublico, key: "PrecioPublico", disabled: true, type: "number" },
+            { label: "Stock", value: form.stock, key: "stock", type: "number" },
+          ].map(({ label, value, key, type = "text", disabled = false, barcode = false }) => (
+            <div key={key} className="w-full sm:w-[48%] bg-gray-50 border border-gray-300 rounded-lg p-4 shadow-sm">
+              <label className="block text-sm font-semibold mb-2 text-gray-700">{label}</label>
+              <input
+                type={type}
+                placeholder={label}
+                value={value}
+                disabled={disabled}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    [key]: type === "number" ? parseFloat(e.target.value) : e.target.value
+                  })
+                }
+                className={`w-full border border-gray-400 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${barcode ? "font-barcode text-4xl" : ""}`}
+              />
+            </div>
+          ))}
+        </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mt-4"
         >
           {loading ? "Enviando..." : "Registrar"}
         </button>
       </form>
 
-      {/* Columna derecha: Lista de productos */}
+
       <div className="w-full md:w-1/2 h-screen overflow-y-auto p-4 bg-gray-50">
-              {/* Cuadro de búsqueda destacado */}
         <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 shadow-sm">
           <label className="block text-sm font-semibold mb-2 text-gray-700">
             Buscar producto
@@ -215,16 +194,48 @@ export default function StoreForm() {
           <p className="text-gray-600">No hay resultados</p>
         ) : (
           <ul className="space-y-3">
-            {products.map((prod: any) => (
-              <li
-                key={prod.CodigoBarras}
-                className="p-4 bg-white border rounded shadow-sm hover:bg-blue-50 cursor-pointer"
-                onClick={() =>  handleFillingOutForm(prod)}
-              >
-                <p className="font-semibold">Producto: {prod.Nombre}</p>
-                <p className="text-sm text-gray-600">Descripcion: {prod.Descripcion}</p>
-              </li>
-            ))}
+            {products.map((prod: any) => {
+              let base64 = "";
+              const hasImageData = prod.ImagenBuffer?.data && Array.isArray(prod.ImagenBuffer.data);
+
+              if (hasImageData) {
+                try {
+                  base64 = btoa(
+                    String.fromCharCode(...new Uint8Array(prod.ImagenBuffer.data))
+                  );
+                } catch (err) {
+                  console.error("Error al convertir imagen a base64:", err);
+                }
+              }
+
+              return (
+                <li
+                  key={prod.CodigoBarras}
+                  className="p-4 bg-white border rounded shadow-sm hover:bg-blue-50 cursor-pointer flex gap-4 items-center"
+                  onClick={() => handleFillingOutForm(prod)}
+                >
+                  {/* Columna izquierda: Información */}
+                  <div className="flex-1">
+                    <p className="font-semibold">Producto: {prod.Nombre}</p>
+                    <p className="text-sm text-gray-600">Descripción: {prod.Descripcion}</p>
+                    <p className="text-sm text-gray-600">Precio: ${prod.PrecioPublico}</p>
+                  </div>
+
+                  {/* Columna derecha: Imagen */}
+                  <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded border bg-gray-100 flex items-center justify-center">
+                    {base64 ? (
+                      <img
+                        src={`data:${prod.ImagenMimeType};base64,${base64}`}
+                        alt={prod.Nombre}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-xs text-gray-500">Sin imagen</span>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

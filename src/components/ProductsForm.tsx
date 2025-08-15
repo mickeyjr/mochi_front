@@ -20,7 +20,7 @@ export default function StoreForm() {
             GananciaPorUnidad: 0,
             Fecha: "",
             Lugar: "",
-            Imagen: "",
+            Imagen: null as File | null,
             FechaEndExits: "",
             RegistrationType: "",
         }
@@ -36,6 +36,7 @@ export default function StoreForm() {
         if (isSubmitting.current) return;
         isSubmitting.current = true;
         setLoading(true);
+        console.log(form.Imagen);
 
         try {
             const newData = {
@@ -43,7 +44,6 @@ export default function StoreForm() {
                 IdEmployee: "202507181825140006782",
                 Fecha: Date.now().toString(),
                 Lugar: "",
-                Imagen: "Test",
                 FechaEndExits: "N/A",
                 EstadoDelProducto: "En existencia",
                 InStock: true,
@@ -52,7 +52,7 @@ export default function StoreForm() {
 
             setProductData(newData);
             console.log("Enviando tienda:", newData);
-            await axios.post("http://localhost:3001/productos", newData);
+            await axios.post("http://localhost:3001/productos", newData, { headers: { "Content-Type": "multipart/form-data" } });
             alert("Producto Registrado!");
 
         }
@@ -75,111 +75,59 @@ export default function StoreForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-sm">
+        <form onSubmit={handleSubmit} className="flex flex-wrap gap-4 justify-center max-w-4xl mx-auto p-4">
+            {[
+                { label: "Código de barras externo", key: "CodigoChino", type: "text" },
+                { label: "Código de barras interno", key: "CodigoBarras", type: "text" },
+                { label: "Nombre del producto", key: "Nombre", type: "text" },
+                { label: "Descripción del producto", key: "Descripcion", type: "text" },
+                { label: "Costo del producto", key: "PrecioCosto", type: "number" },
+                { label: "Precio Unitario", key: "PrecioUnitario", type: "number" },
+                { label: "Contenido Interno", key: "Contenido", type: "number" },
+                { label: "Precio al público", key: "PrecioPublico", type: "number" },
+                { label: "Stock", key: "stock", type: "number" },
+                { label: "Ganancia unitaria", key: "GananciaPorUnidad", type: "number" },
+                { label: "Adicione una imagen del producto", key: "Imagen", type: "file" },
+            ].map(({ label, key, type }) => {
+                const formKey = key as keyof typeof form;
 
-            <label className="border p-2 rounded" >Codigo de barras externo</label>
+                return (
+                    <div key={key} className="w-full sm:w-[48%] flex flex-col">
+                        <label className="mb-1 font-semibold">{label}</label>
+                        <input
+                            type={type}
+                            placeholder={label}
+                            value={
+                                type === "file"
+                                    ? undefined
+                                    : typeof form[formKey] === "number" || typeof form[formKey] === "string"
+                                        ? form[formKey]
+                                        : ""
+                            }
+                            onChange={(e) => {
+                                if (type === "file") {
+                                    setForm({ ...form, [formKey]: e.target.files?.[0] || null });
+                                } else if (type === "number") {
+                                    setForm({ ...form, [formKey]: parseFloat(e.target.value) });
+                                } else {
+                                    setForm({ ...form, [formKey]: e.target.value });
+                                }
+                            }}
+                            className="border p-2 rounded"
+                        />
+                    </div>
+                );
+            })}
 
-            <input
-                type="text"
-                placeholder="Codigo de barras Externo"
-                value={form.CodigoChino}
-                onChange={(e) => setForm({ ...form, CodigoChino: e.target.value })}
-                className="border p-2 rounded"
-            />
-
-            <label className="border p-2 rounded" >Codigo de barras interno</label>
-
-            <input
-                type="text"
-                placeholder="Codigo de barras interno"
-                value={form.CodigoBarras}
-                onChange={(e) => setForm({ ...form, CodigoBarras: e.target.value })}
-                className="border p-2 rounded"
-            />
-
-            <label className="border p-2 rounded" >Nombre del producto</label>
-
-            <input
-                type="text"
-                placeholder="Nombre de producto"
-                value={form.Nombre}
-                onChange={(e) => setForm({ ...form, Nombre: e.target.value })}
-                className="border p-2 rounded"
-            />
-
-            <label className="border p-2 rounded" >Descripcion del producto</label>
-
-            <input
-                type="text"
-                placeholder="Descripcion de producto"
-                value={form.Descripcion}
-                onChange={(e) => setForm({ ...form, Descripcion: e.target.value })}
-                className="border p-2 rounded"
-            />
-
-            <label className="border p-2 rounded" >Costo del producto</label>
-
-            <input
-                type="number"
-                placeholder="Costo del producto"
-                value={form.PrecioCosto}
-                onChange={(e) => setForm({ ...form, PrecioCosto: parseFloat(e.target.value) })}
-                className="border p-2 rounded"
-            />
-
-            <label className="border p-2 rounded" >Precio Unitario</label>
-
-            <input
-                type="number"
-                placeholder="Precio Unitario"
-                value={form.PrecioUnitario}
-                onChange={(e) => setForm({ ...form, PrecioUnitario: parseFloat(e.target.value) })}
-                className="border p-2 rounded"
-            />
-
-            <label className="border p-2 rounded" >Contenido Interno</label>
-
-            <input
-                type="number"
-                placeholder="Contenido interno"
-                value={form.Contenido}
-                onChange={(e) => setForm({ ...form, Contenido: parseFloat(e.target.value) })}
-                className="border p-2 rounded"
-            />
-
-            <label className="border p-2 rounded" >Precio al pulico</label>
-
-            <input
-                type="number"
-                placeholder="Precio al publico"
-                value={form.PrecioPublico}
-                onChange={(e) => setForm({ ...form, PrecioPublico: parseFloat(e.target.value) })}
-                className="border p-2 rounded"
-            />
-
-            <label className="border p-2 rounded" >stock</label>
-
-            <input
-                type="number"
-                placeholder="stock"
-                value={form.stock}
-                onChange={(e) => setForm({ ...form, stock: parseFloat(e.target.value) })}
-                className="border p-2 rounded"
-            />
-
-            <label className="border p-2 rounded" >Ganancia unitaria</label>
-
-            <input
-                type="number"
-                placeholder="stock"
-                value={form.GananciaPorUnidad}
-                onChange={(e) => setForm({ ...form, GananciaPorUnidad: parseFloat(e.target.value) })}
-                className="border p-2 rounded"
-            />
-
-            <button type="submit" disabled={loading} className="bg-blue-500 text-white p-2 rounded ">
+            <button
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-[48%] bg-blue-500 text-white p-2 rounded mt-2"
+            >
                 {loading ? "Enviando..." : "Registrar"}
             </button>
         </form>
+
+
     );
 }
