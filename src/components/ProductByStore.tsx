@@ -13,7 +13,7 @@ export default function StoreForm() {
     IdEmployee: "",
     PrecioPublico: 0,
     Contenido: 0,
-    stock: 0,
+    stock: 1,
     EstadoDelProducto: "",
     InStock: true,
     GananciaPorUnidad: 0,
@@ -33,6 +33,7 @@ export default function StoreForm() {
   const [products, setProducts] = useState([]);
 
   const handleFillingOutForm = async (product: any) => {
+    console.log(product)
     setForm((prev) => ({
       ...prev,
       CodigoBarras: product?.CodigoBarras ?? "",
@@ -50,7 +51,7 @@ export default function StoreForm() {
       Fecha: product?.Fecha || prev.Fecha,
       FechaEndExits: product?.FechaEndExits || prev.FechaEndExits,
       IdEmployee: product?.IdEmployee || prev.IdEmployee,
-      IdProduct: product?.IdProduct||prev.IdProduct
+      IdProduct: product?._id||prev.IdProduct
     }));
 
   }
@@ -73,12 +74,31 @@ export default function StoreForm() {
         EstadoDelProducto: "En existencia",
         InStock: true,
         RegistrationType: 1,
+        IdStore: "MX-ME-AP-01",
       };
 
       setProductData(newData);
       console.log("Enviando tienda:", newData);
       await axios.post("http://localhost:3001/productos/bystore", newData);
       alert("Producto Registrado!");
+      setForm((prev) => ({
+        ...prev,
+        CodigoBarras:  "",
+        CodigoChino:  "",
+        Nombre:  "",
+        Descripcion: "",
+        PrecioCosto:  0,
+        PrecioUnitario: 0,
+        PrecioPublico: 0,
+        Contenido: 0,
+        stock: 1,
+        EstadoDelProducto: "",
+        Lugar: "",
+        Imagen: "",
+        Fecha: "",
+        FechaEndExits: "",
+        IdProduct: ""
+      }));
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         const message =
@@ -196,12 +216,12 @@ export default function StoreForm() {
           <ul className="space-y-3">
             {products.map((prod: any) => {
               let base64 = "";
-              const hasImageData = prod.ImagenBuffer?.data && Array.isArray(prod.ImagenBuffer.data);
+              const hasImageData = prod.imagenes[0]?.ImagenBuffer?.data && Array.isArray(prod.imagenes[0].ImagenBuffer.data);
 
               if (hasImageData) {
                 try {
                   base64 = btoa(
-                    String.fromCharCode(...new Uint8Array(prod.ImagenBuffer.data))
+                    String.fromCharCode(...new Uint8Array(prod.imagenes[0].ImagenBuffer.data))
                   );
                 } catch (err) {
                   console.error("Error al convertir imagen a base64:", err);

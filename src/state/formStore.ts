@@ -22,16 +22,16 @@ type products = {
   idProduct: string,
   nombre: string,
   numeroDePiezas: number,
-  imagen: string
 }
 
 interface SaleData {
-  PaymentReceived: string;
+  PaymentReceived: number;
   PaymentType: string;
   SalesLocation: string,
   IdStore: string, 
   IdCashRegister: string, 
   IdEmployee: string, 
+  Total: number,
   products: Array<products>, 
 }
 

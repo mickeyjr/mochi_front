@@ -54,6 +54,23 @@ export default function StoreForm() {
             console.log("Enviando tienda:", newData);
             await axios.post("http://localhost:3001/productos", newData, { headers: { "Content-Type": "multipart/form-data" } });
             alert("Producto Registrado!");
+            setForm((prev) => ({
+                ...prev,
+                CodigoChino: "",
+                CodigoBarras: "",
+                Nombre: "",
+                Descripcion: "",
+                PrecioCosto: 0,
+                PrecioUnitario: 0,
+                PrecioPublico: 0,
+                Contenido: 0,
+                stock: 0,
+                EstadoDelProducto: "",
+                InStock: true,
+                GananciaPorUnidad: 0,
+                Imagen: null as File | null,
+                FechaEndExits: "",
+            }));
 
         }
         catch (error: unknown) {
