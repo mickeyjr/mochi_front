@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { useFormStore } from "../state/formStore";
 import axios from "axios";
 
 interface Product {
@@ -10,7 +9,7 @@ interface Product {
   CodigoChino: string;
   PrecioPublico: number;
   imagenMimeType?: string;
-  imagenBuffer?: number[]; // Viene como array desde MongoDB
+  imagenBuffer?: number[];
 }
 
 interface ProductWithPieces extends Product {
@@ -55,9 +54,9 @@ export default function StoreForm() {
         name: text,
         store: "MX-ME-AP-01",
       });
-
+      console.log(res);
       const products = res.data.map((p: any) => ({
-        idProduct: p._id, // Asegura usar el ObjectId correcto
+        idProduct: p.IdProduct, // Asegura usar el ObjectId correcto
         nombre: p.Nombre,
         Descripcion: p.Descripcion,
         CodigoBarras: p.CodigoBarras,
