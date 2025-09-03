@@ -1,12 +1,15 @@
 import React, { useRef } from "react";
 import Webcam from "react-webcam";
 
-interface CameraCaptureProps {
-  onCapture: (file: File) => void;
-  onClose?: () => void;
+type CameraCaptureProps = {
+  onCapture: (file: File) => void
+  onClose: () => void
+  width?: number
+  height?: number
 }
 
-export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
+
+export default function CameraCapture({ onCapture, onClose, width = 1280, height = 720 }: CameraCaptureProps) {
   const webcamRef = useRef<Webcam>(null);
 
   const capture = () => {
@@ -27,7 +30,18 @@ export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps
 
   return (
     <div className="flex flex-col items-center p-4 border rounded shadow-md bg-white">
-      <Webcam audio={false} ref={webcamRef} screenshotFormat="image/png" width={300} />
+      <Webcam
+        audio={false}
+        ref={webcamRef}
+        screenshotFormat="image/png"
+        width={width}
+        videoConstraints={{
+          width: width,   
+          height: height,
+          facingMode: "environment",
+        }}
+      />
+
       <div className="flex gap-2 mt-2">
         <button
           onClick={capture}

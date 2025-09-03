@@ -30,7 +30,10 @@ export default function StoreForm() {
   const isSubmitting = useRef(false);
 
   const [seacrch, setSearch] = useState({ text: "" });
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
+
+  const [showOptions, setShowOptions] = useState(false);
+  const [exitData, setExitData] = useState<{ InStock: boolean; exists: boolean } | null>(null);
 
   const handleFillingOutForm = async (product: any) => {
     console.log(product)
@@ -51,9 +54,8 @@ export default function StoreForm() {
       Fecha: product?.Fecha || prev.Fecha,
       FechaEndExits: product?.FechaEndExits || prev.FechaEndExits,
       IdEmployee: product?.IdEmployee || prev.IdEmployee,
-      IdProduct: product?._id||prev.IdProduct
+      IdProduct: product?._id || prev.IdProduct
     }));
-
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -64,45 +66,58 @@ export default function StoreForm() {
     setLoading(true);
 
     try {
-      const newData = {
-        ...form,
-        IdEmployee: "202507181825140006782",
-        Fecha: Date.now().toString(),
-        Lugar: "",
-        Imagen: null,
-        FechaEndExits: "N/A",
-        EstadoDelProducto: "En existencia",
-        InStock: true,
-        RegistrationType: 1,
+      const { data } = await axios.post("http://localhost:3001/productos/exits", {
         IdStore: "MX-ME-AP-01",
-      };
+        IdProduct: form.IdProduct
+      });
 
-      setProductData(newData);
-      console.log("Enviando tienda:", newData);
-      await axios.post("http://localhost:3001/productos/bystore", newData);
-      alert("Producto Registrado!");
-      setForm((prev) => ({
-        ...prev,
-        CodigoBarras:  "",
-        CodigoChino:  "",
-        Nombre:  "",
-        Descripcion: "",
-        PrecioCosto:  0,
-        PrecioUnitario: 0,
-        PrecioPublico: 0,
-        Contenido: 0,
-        stock: 1,
-        EstadoDelProducto: "",
-        Lugar: "",
-        Imagen: "",
-        Fecha: "",
-        FechaEndExits: "",
-        IdProduct: ""
-      }));
+      console.log("Respuesta exits:", data);
+      setExitData(data);
+
+      if (data.InStock === false && data.exists === false) {
+        const newData = {
+          ...form,
+          IdEmployee: "202507181825140006782",
+          Fecha: Date.now().toString(),
+          Lugar: "",
+          Imagen: null,
+          FechaEndExits: "N/A",
+          EstadoDelProducto: "En existencia",
+          InStock: true,
+          RegistrationType: 1,
+          IdStore: "MX-ME-AP-01",
+          TypeStock: 0
+        };
+
+        setProductData(newData);
+        console.log("Enviando tienda:", newData);
+        await axios.post("http://localhost:3001/productos/bystore", newData);
+        alert("Producto Registrado!");
+        setForm((prev) => ({
+          ...prev,
+          CodigoBarras: "",
+          CodigoChino: "",
+          Nombre: "",
+          Descripcion: "",
+          PrecioCosto: 0,
+          PrecioUnitario: 0,
+          PrecioPublico: 0,
+          Contenido: 0,
+          stock: 1,
+          EstadoDelProducto: "",
+          Lugar: "",
+          Imagen: "",
+          Fecha: "",
+          FechaEndExits: "",
+          IdProduct: ""
+        }));
+        alert("Producto Registrado!");
+      } else {
+        setShowOptions(true);
+      }
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        const message =
-          error.response?.data?.message?.[0] || "Error desconocido";
+        const message = error.response?.data?.message?.[0] || "Error desconocido";
         console.error("Error:", message);
         alert(message);
       } else if (error instanceof Error) {
@@ -118,21 +133,47 @@ export default function StoreForm() {
     }
   };
 
+  const handleOption = async (option: "update" | "add" | "cancel") => {
+    if (option === "cancel") {
+      setShowOptions(false);
+      return;
+    }
+
+    const TypeStock = option === "update" ? 1 : 2;
+
+    try {
+      const payload = {
+        IdStore: "MX-ME-AP-01",
+        IdProduct: form.IdProduct,
+        Stock: form.stock,
+        TypeStock,
+      };
+
+      console.log("Enviando actualización de stock:", payload);
+
+      await axios.put("http://localhost:3001/productos/stock", payload);
+
+      alert(TypeStock === 1 ? "✅ Stock actualizado" : "➕ Stock sumado");
+    } catch (err) {
+      console.error("❌ Error al actualizar stock:", err);
+      alert("No se pudo realizar la acción");
+    } finally {
+      setShowOptions(false);
+    }
+  };
+
+
+
   const handleSearchProdcustBlur = async () => {
     if (!seacrch.text.trim()) return;
 
     try {
-
       setLoading(true);
-
       const { data } = await axios.post(
         "http://localhost:3001/productos/byname",
         { name: seacrch.text }
       );
-
-      console.log(data);
       setProducts(data);
-
     } catch (err) {
       console.error("No se pudo obtener el producto:", err);
       alert("Producto no encontrado");
@@ -185,6 +226,34 @@ export default function StoreForm() {
         </button>
       </form>
 
+      {showOptions && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-xl shadow-lg space-y-4 w-80">
+            <h2 className="text-lg font-bold text-gray-800">El producto ya existe</h2>
+            <p className="text-sm text-gray-600">Selecciona una opción:</p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => handleOption("update")}
+                className="bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600"
+              >
+                Actualizar stock
+              </button>
+              <button
+                onClick={() => handleOption("add")}
+                className="bg-green-600 text-white py-2 rounded hover:bg-green-700"
+              >
+                Sumar stock
+              </button>
+              <button
+                onClick={() => handleOption("cancel")}
+                className="bg-gray-400 text-white py-2 rounded hover:bg-gray-500"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="w-full md:w-1/2 h-screen overflow-y-auto p-4 bg-gray-50">
         <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 shadow-sm">

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFormStore } from "../state/formStore";
 import axios from "axios";
 import CameraCapture from "./CameraCapture";
+import BarcodeScannerComponent from "react-qr-barcode-scanner";
 
 export default function StoreForm() {
     const [form, setForm] = useState({
@@ -22,15 +23,20 @@ export default function StoreForm() {
         Lugar: "",
         Imagen: null as File | null,
         FechaEndExits: "",
-        RegistrationType: "",
+        RegistrationType: 0,
         Serie: "",
         Brand: ""
     });
 
     const { setProductData } = useFormStore();
     const [loading, setLoading] = useState(false);
-    const [showCamera, setShowCamera] = useState(false); // ✅ Ahora dentro del componente
+    const [showCamera, setShowCamera] = useState(false);
     const isSubmitting = useRef(false);
+    const [showScanner, setShowScanner] = useState(false);
+    const [scannerTarget, setScannerTarget] = useState<"CodigoChino" | "CodigoBarras" | null>(null);
+    const [lastScan, setLastScan] = useState<string | null>(null);
+    const [scanTimeout, setScanTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+
 
     type SerieType = { _id: string; Serie: string; num: number; __v?: number };
     type BrandType = { _id: string; Brand: string; num: number; __v?: number };
@@ -98,10 +104,7 @@ export default function StoreForm() {
                 Brand: ""
             };
 
-            const [form, setForm] = useState(initialForm);
-
             setForm(initialForm);
-
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
                 const message = error.response?.data?.message?.[0] || "Error desconocido";
@@ -125,24 +128,93 @@ export default function StoreForm() {
             {/* Código de barras externo */}
             <div className="w-full sm:w-[48%] flex flex-col">
                 <label className="mb-1 font-semibold">Código de barras externo</label>
-                <input
-                    type="text"
-                    value={form.CodigoChino}
-                    onChange={(e) => setForm({ ...form, CodigoChino: e.target.value })}
-                    className="border p-2 rounded"
-                />
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={form.CodigoChino}
+                        onChange={(e) => setForm({ ...form, CodigoChino: e.target.value })}
+                        className="border p-2 rounded flex-1"
+                    />
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setScannerTarget("CodigoChino");
+                            setShowScanner(true);
+                        }}
+                        className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                        📷
+                    </button>
+                </div>
             </div>
 
             {/* Código de barras interno */}
             <div className="w-full sm:w-[48%] flex flex-col">
                 <label className="mb-1 font-semibold">Código de barras interno</label>
-                <input
-                    type="text"
-                    value={form.CodigoBarras}
-                    onChange={(e) => setForm({ ...form, CodigoBarras: e.target.value })}
-                    className="border p-2 rounded"
-                />
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={form.CodigoBarras}
+                        onChange={(e) => setForm({ ...form, CodigoBarras: e.target.value })}
+                        className="border p-2 rounded flex-1"
+                    />
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setScannerTarget("CodigoBarras");
+                            setShowScanner(true);
+                        }}
+                        className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                        📷
+                    </button>
+                </div>
             </div>
+
+            {showScanner && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white p-4 rounded-2xl shadow-lg max-w-md w-full flex flex-col items-center">
+                        <h2 className="text-lg font-semibold mb-4">Escanear código de barras</h2>
+
+                        {/* Contenedor centrado del escáner */}
+                        <div className="flex items-center justify-center w-[320px] h-[320px] overflow-hidden rounded-lg border">
+                            <BarcodeScannerComponent
+                                width={640}
+                                height={480}
+                                onUpdate={(err, result) => {
+                                    if (result) {
+                                        const code = result.getText();
+
+                                        if (scanTimeout) clearTimeout(scanTimeout);
+
+                                        const timeout = setTimeout(() => {
+                                            if (lastScan === code) {
+                                                if (scannerTarget) {
+                                                    setForm({ ...form, [scannerTarget]: code });
+                                                }
+                                                setShowScanner(false);
+                                            } else {
+                                                setLastScan(code);
+                                            }
+                                        }, 10);
+
+                                        setScanTimeout(timeout);
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setShowScanner(false)}
+                            className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            )}
+
 
             {/* Serie */}
             <div className="w-full sm:w-[48%] flex flex-col">
@@ -244,12 +316,34 @@ export default function StoreForm() {
                     </button>
                 </div>
 
+                {/* 📷 Modal SOLO cuando showCamera = true */}
                 {showCamera && (
-                    <div className="mt-2">
-                        <CameraCapture
-                            onCapture={(file) => setForm({ ...form, Imagen: file })}
-                            onClose={() => setShowCamera(false)}
-                        />
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                        <div className="bg-white p-4 rounded-2xl shadow-lg max-w-4xl w-full">
+                            <h2 className="text-xl font-semibold mb-4 text-center">
+                                Capturar Imagen del producto
+                            </h2>
+
+                            <div className="flex justify-center">
+                                <CameraCapture
+                                    width={1280}
+                                    height={720}
+                                    onCapture={(file) => {
+                                        setForm({ ...form, Imagen: file });
+                                        setShowCamera(false);
+                                    }}
+                                    onClose={() => setShowCamera(false)}
+                                />
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowCamera(false)}
+                                className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
                     </div>
                 )}
 
@@ -261,6 +355,7 @@ export default function StoreForm() {
                     />
                 )}
             </div>
+
 
             <button
                 type="submit"
