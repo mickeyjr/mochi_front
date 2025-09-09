@@ -10,6 +10,7 @@ interface Product {
   PrecioPublico: number;
   imagenMimeType?: string;
   imagenBuffer?: number[];
+  UrlImage?: string;
 }
 
 interface ProductWithPieces extends Product {
@@ -56,14 +57,14 @@ export default function StoreForm() {
       });
       console.log(res);
       const products = res.data.map((p: any) => ({
-        idProduct: p.IdProduct, // Asegura usar el ObjectId correcto
+        idProduct: p.IdProduct,
         nombre: p.Nombre,
         Descripcion: p.Descripcion,
         CodigoBarras: p.CodigoBarras,
         CodigoChino: p.CodigoChino,
         PrecioPublico: p.PrecioPublico,
         imagenMimeType: p.imagenes?.[0]?.ImagenMimeType,
-        imagenBuffer: p.imagenes?.[0]?.ImagenBuffer?.data || [],
+        UrlImage: p.imagenes?.[0]?.UrlImage
       }));
 
       setAllProducts(products);
@@ -172,7 +173,7 @@ export default function StoreForm() {
       };
 
       let response = await axios.post("http://localhost:3001/sales/save", payload);
-      
+
       alert("Venta registrada!, " + "Cambio: " + response.data.data.cambio);
       console.log(response)
       setForm((prev) => ({
@@ -233,7 +234,11 @@ export default function StoreForm() {
                   className="p-3 border rounded flex items-center gap-3 hover:bg-gray-100 cursor-pointer"
                   onClick={() => addProduct(product)}
                 >
-                  {renderImage(product.imagenMimeType, product.imagenBuffer)}
+                  <img
+                    src={`${product.UrlImage}`}
+                    alt="Producto"
+                    className="w-16 h-16 object-cover rounded"
+                  />
                   <div>
                     <p className="font-semibold">{product.nombre}</p>
                     <p className="text-sm text-gray-500">{product.Descripcion}</p>
@@ -252,7 +257,11 @@ export default function StoreForm() {
                 key={p.idProduct}
                 className="p-3 border rounded flex gap-3 items-center"
               >
-                {renderImage(p.imagenMimeType, p.imagenBuffer)}
+                <img
+                  src={`${p.UrlImage}`}
+                  alt="Producto"
+                  className="w-16 h-16 object-cover rounded"
+                />
                 <div className="flex-1">
                   <p className="font-semibold">{p.nombre}</p>
                   <p className="text-sm text-gray-500">Descripción: {p.Descripcion}</p>

@@ -9,7 +9,8 @@ type Product = {
   IdProduct: string
   imagenes: {
     ImagenMimeType: string
-    ImagenBuffer: string
+    ImagenBuffer: string,
+    UrlImage?: string
   }[]
 }
 
@@ -50,7 +51,7 @@ export default function ProductCard({
 
   const imageSrc =
     product.imagenes?.length > 0
-      ? `data:${product.imagenes[0].ImagenMimeType};base64,${product.imagenes[0].ImagenBuffer}`
+      ? `${product.imagenes[0].UrlImage}`
       : 'https://via.placeholder.com/300x200.png?text=Sin+Imagen'
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

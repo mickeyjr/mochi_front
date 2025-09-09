@@ -174,6 +174,7 @@ export default function StoreForm() {
         { name: seacrch.text }
       );
       setProducts(data);
+      console.log(data)
     } catch (err) {
       console.error("No se pudo obtener el producto:", err);
       alert("Producto no encontrado");
@@ -284,18 +285,7 @@ export default function StoreForm() {
         ) : (
           <ul className="space-y-3">
             {products.map((prod: any) => {
-              let base64 = "";
-              const hasImageData = prod.imagenes[0]?.ImagenBuffer?.data && Array.isArray(prod.imagenes[0].ImagenBuffer.data);
-
-              if (hasImageData) {
-                try {
-                  base64 = btoa(
-                    String.fromCharCode(...new Uint8Array(prod.imagenes[0].ImagenBuffer.data))
-                  );
-                } catch (err) {
-                  console.error("Error al convertir imagen a base64:", err);
-                }
-              }
+              const imageUrl = prod.imagenes?.[0]?.UrlImage;
 
               return (
                 <li
@@ -312,9 +302,9 @@ export default function StoreForm() {
 
                   {/* Columna derecha: Imagen */}
                   <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded border bg-gray-100 flex items-center justify-center">
-                    {base64 ? (
+                    {imageUrl ? (
                       <img
-                        src={`data:${prod.ImagenMimeType};base64,${base64}`}
+                        src={imageUrl}
                         alt={prod.Nombre}
                         className="w-full h-full object-cover"
                       />

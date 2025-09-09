@@ -4,7 +4,8 @@ import EmployeePage from "./pages/EmployeePage";
 import SalesPage from "./pages/SalesPage";
 import ProductPage from "./pages/ProductPage";
 import ProductByStorePage from "./pages/ProductByStorePage";
-import ProductPhotoUpdatePage from "./pages/ProductPhotoUpdatePage"; 
+import ProductPhotoUpdatePage from "./pages/ProductPhotoUpdatePage";
+import BannerListPage from "./pages/BannersUpdate";
 import { Menu, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
@@ -46,12 +47,11 @@ export default function App() {
                 <button className="flex items-center gap-1 hover:text-gray-200 peer">
                   Ventas <ChevronDown size={16} />
                 </button>
-                <div
-                  className="absolute left-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg 
-                    opacity-0 scale-95 
-                    peer-hover:opacity-100 peer-hover:scale-100 
-                    hover:opacity-100 hover:scale-100
-                    transform transition-all duration-200 z-20"
+                <div className="absolute left-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg 
+                  opacity-0 scale-95 
+                  peer-hover:opacity-100 peer-hover:scale-100 
+                  hover:opacity-100 hover:scale-100
+                  transform transition-all duration-200 z-20"
                 >
                   <NavLink to="/sales" className="block px-4 py-2 hover:bg-blue-100">
                     Registrar Venta
@@ -70,12 +70,11 @@ export default function App() {
                 <button className="flex items-center gap-1 hover:text-gray-200 peer">
                   Productos <ChevronDown size={16} />
                 </button>
-                <div
-                  className="absolute left-0 mt-2 w-56 bg-white text-black rounded-md shadow-lg 
-                    opacity-0 scale-95 
-                    peer-hover:opacity-100 peer-hover:scale-100 
-                    hover:opacity-100 hover:scale-100
-                    transform transition-all duration-200 z-20"
+                <div className="absolute left-0 mt-2 w-56 bg-white text-black rounded-md shadow-lg 
+                  opacity-0 scale-95 
+                  peer-hover:opacity-100 peer-hover:scale-100 
+                  hover:opacity-100 hover:scale-100
+                  transform transition-all duration-200 z-20"
                 >
                   <NavLink to="/product" className="block px-4 py-2 hover:bg-blue-100">
                     Registrar Producto
@@ -91,6 +90,26 @@ export default function App() {
                     className="block px-4 py-2 hover:bg-blue-100"
                   >
                     Actualiza Foto de Producto
+                  </NavLink>
+                </div>
+              </div>
+
+              {/* Banners */}
+              <div className="relative">
+                <button className="flex items-center gap-1 hover:text-gray-200 peer">
+                  Banners <ChevronDown size={16} />
+                </button>
+                <div className="absolute left-0 mt-2 w-64 bg-white text-black rounded-md shadow-lg 
+                  opacity-0 scale-95 
+                  peer-hover:opacity-100 peer-hover:scale-100 
+                  hover:opacity-100 hover:scale-100
+                  transform transition-all duration-200 z-20"
+                >
+                  <NavLink
+                    to="/banners"
+                    className="block px-4 py-2 hover:bg-blue-100"
+                  >
+                    Crear y Actualizar Banners
                   </NavLink>
                 </div>
               </div>
@@ -144,6 +163,16 @@ export default function App() {
                 </NavLink>
               </div>
             </details>
+
+            {/* Submenú Banners */}
+            <details>
+              <summary className="cursor-pointer py-2">Banners</summary>
+              <div className="pl-4 flex flex-col gap-1">
+                <NavLink to="/banners" onClick={() => setOpen(false)}>
+                  Crear y Actualizar Banners
+                </NavLink>
+              </div>
+            </details>
           </div>
         )}
       </nav>
@@ -156,6 +185,7 @@ export default function App() {
         <Route path="/product" element={<ProductPage />} />
         <Route path="/productByStore" element={<ProductByStorePage />} />
         <Route path="/productPhotoUpdate" element={<ProductPhotoUpdatePage />} />
+        <Route path="/banners" element={<BannerListPage />} /> {/* ← nueva ruta */}
         {/* <Route path="/sales-report" element={<SalesReportPage />} /> */}
       </Routes>
     </Router>

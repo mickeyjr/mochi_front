@@ -8,9 +8,9 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch(`${apiUrl}/main-products/${storeId}`)
+    fetch(`${apiUrl}/images-update/${storeId}`)
       .then((res) => res.json())
-      .then((data) => { setProducts(data); console.log(data) })
+      .then((data) => { setProducts(data)})
       .catch((err) => console.error("Error al cargar productos:", err));
   }, []);
 
