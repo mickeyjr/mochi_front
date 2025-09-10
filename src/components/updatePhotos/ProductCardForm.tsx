@@ -7,11 +7,7 @@ type Product = {
   Descripcion: string
   CodigoBarras: string
   IdProduct: string
-  imagenes: {
-    ImagenMimeType: string
-    ImagenBuffer: string,
-    UrlImage?: string
-  }[]
+  imagenes: { UrlImage: string }[]
 }
 
 type Sticker = {
@@ -51,8 +47,11 @@ export default function ProductCard({
 
   const imageSrc =
     product.imagenes?.length > 0
-      ? `${product.imagenes[0].UrlImage}`
+      ? product.imagenes[0].UrlImage
       : 'https://via.placeholder.com/300x200.png?text=Sin+Imagen'
+
+
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
@@ -110,13 +109,11 @@ export default function ProductCard({
     img.src = capturedImage
     img.onload = () => {
       const canvas = canvasRef.current!
-      // Tamaño fijo para mantener consistencia
       canvas.width = 600
       canvas.height = 400
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.filter = filter
 
-      // Escalar imagen para que encaje
       const scaleX = canvas.width / img.width
       const scaleY = canvas.height / img.height
       const scale = Math.min(scaleX, scaleY)
@@ -126,7 +123,6 @@ export default function ProductCard({
       const offsetY = (canvas.height - imgDrawHeight) / 2
       ctx.drawImage(img, offsetX, offsetY, imgDrawWidth, imgDrawHeight)
 
-      // Dibujar stickers
       stickers.forEach(s => {
         if (!s.imgObj) return
         ctx.save()
@@ -143,7 +139,6 @@ export default function ProductCard({
     drawCanvas()
   }, [drawCanvas])
 
-  // Drag & drop
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current || !capturedImage) return
     const rect = canvasRef.current.getBoundingClientRect()
@@ -220,51 +215,56 @@ export default function ProductCard({
 
   const uploadWithStickers = async () => {
     if (!canvasRef.current) return
-    canvasRef.current.toBlob(async blob => {
-      if (!blob) return
-      const file = new File([blob], 'foto_stickers.jpg', { type: 'image/jpeg' })
-      setSelectedFile(file)
-      await uploadFile(file)
-    }, 'image/jpeg')
+    const blob: Blob | null = await new Promise(resolve =>
+      canvasRef.current!.toBlob(resolve, 'image/jpeg')
+    )
+    if (!blob) return
+    const file = new File([blob], 'foto_stickers.jpg', { type: 'image/jpeg' })
+    setSelectedFile(file)
+    await uploadFile(file)
   }
 
   const uploadFile = async (file: File) => {
     const formData = new FormData()
     formData.append('Imagen', file)
+
     try {
       setLoading(true)
+
       const res = await fetch(
         `${import.meta.env.VITE_API_BACK}/productos/${product.IdProduct}/image`,
         { method: 'PUT', body: formData }
       )
+
       if (!res.ok) {
         const errorText = await res.text()
         throw new Error(`Error al subir la imagen: ${errorText}`)
       }
+
+      const data = await res.json()
+
       const newProduct = { ...product }
-      const reader = new FileReader()
-      reader.onload = () => {
-        if (reader.result) {
-          newProduct.imagenes = [{
-            ImagenMimeType: file.type,
-            ImagenBuffer: (reader.result as string).split(',')[1]
-          }]
-          onUpdateImage(newProduct)
-          setSelectedFile(null)
-          setCapturedImage(null)
-          setShowCamera(false)
-          setShowModal(false)
-          setFilter('none')
-          setStickers([])
-        }
-      }
-      reader.readAsDataURL(file)
+      newProduct.imagenes = [{ UrlImage: `${data.img}?t=${Date.now()}` }]
+      onUpdateImage(newProduct)
+
+
+      onUpdateImage(newProduct)
+
+      // Limpiar estados y cerrar modal
+      setSelectedFile(null)
+      setCapturedImage(null)
+      setShowCamera(false)
+      setShowModal(false)
+      setFilter('none')
+      setStickers([])
+
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
     }
   }
+
 
   const filters = [
     { name: 'None', value: 'none' },
@@ -273,14 +273,13 @@ export default function ProductCard({
     { name: 'Moon', value: 'grayscale(100%) contrast(110%)' },
     { name: 'Lark', value: 'saturate(150%) brightness(110%)' },
     { name: 'Reyes', value: 'brightness(120%) sepia(30%)' },
-    { name: 'Juno', value: 'contrast(120%) saturate(150%)' },
+    { name: 'Juno', value: 'contrast(120%) saturate(150%)' }
   ]
 
   const selectedSticker = stickers.find(s => s.id === selectedStickerId)
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden w-80 m-4">
-      {/* --- Imagen del producto --- */}
       <div className="h-48 w-full overflow-hidden rounded-t-xl">
         <img
           src={imageSrc}
@@ -481,7 +480,6 @@ export default function ProductCard({
                     setStickers([])
                   }}
                   className="absolute top-2 right-2 text-gray-500 hover:text"
-
                 >
                   ✕
                 </button>

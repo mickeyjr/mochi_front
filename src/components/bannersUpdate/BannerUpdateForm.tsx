@@ -3,13 +3,11 @@ import React, { useEffect, useState } from 'react';
 const BannerList = () => {
     interface Banner {
         _id: string;
-        Imagen?: { type: string; data: number[] };
-        ImageApp?: { type: string; data: number[] };
-        Mimetype?: string;
-        MimetypeApp?: string;
         Link: string;
         position: number;
         Identifier: string;
+        ImagenUrl: string;
+        ImageUrlApp: string;
     }
 
     const [banners, setBanners] = useState<Banner[]>([]);
@@ -436,8 +434,8 @@ const BannerList = () => {
             {/* Renderizado de banners */}
             {banners.map(banner => {
                 const id = banner._id;
-                const imgBase64 = banner.Imagen?.data ? bufferToBase64(banner.Imagen.data) : null;
-                const imgAppBase64 = banner.ImageApp?.data ? bufferToBase64(banner.ImageApp.data) : null;
+                const imgBase64 = banner.ImagenUrl ? banner.ImagenUrl : null;
+                const imgAppBase64 = banner.ImageUrlApp ? banner.ImageUrlApp  : null;
 
                 return (
                     <div key={id} className="border p-4 flex flex-col gap-6 rounded-md shadow-sm bg-white">
@@ -446,7 +444,7 @@ const BannerList = () => {
                                 <div className="flex flex-col items-center">
                                     <span className="text-sm font-medium text-gray-600 mb-1">Imagen Web</span>
                                     <img
-                                        src={`data:${banner.Mimetype};base64,${imgBase64}`}
+                                        src={imgBase64}
                                         alt={`${banner.Identifier}-Web`}
                                         className="w-[384px] h-[384px] sm:w-64 sm:h-64 object-contain border rounded"
                                     />
@@ -457,7 +455,7 @@ const BannerList = () => {
                                 <div className="flex flex-col items-center">
                                     <span className="text-sm font-medium text-gray-600 mb-1">Imagen App</span>
                                     <img
-                                        src={`data:${banner.MimetypeApp};base64,${imgAppBase64}`}
+                                        src={imgAppBase64}
                                         alt={`${banner.Identifier}-App`}
                                         className="w-[384px] h-[384px] sm:w-64 sm:h-64 object-contain border rounded"
                                     />
